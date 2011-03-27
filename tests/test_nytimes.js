@@ -1,30 +1,30 @@
 var spider = require('../main');
 
-var s = spider.createSpider();
-
-s.route('www.nytimes.com', '/pages/dining/index.html', function (window, $) {
-  $('a').spider();
-})
-s.route('travel.nytimes.com', '*', function (window, $) {
-  $('a').spider();
-  if (this.fromCache) return;
+spider()
+  .route('www.nytimes.com', '/pages/dining/index.html', function (window, $) {
+    $('a').spider();
+  })
+  .route('travel.nytimes.com', '*', function (window, $) {
+    $('a').spider();
+    if (this.fromCache) return;
   
-  var article = { title: $('nyt_headline').text(), articleBody: '', photos: [] }
-  article.body = '' 
-  $('div.articleBody').each(function () {
-    article.body += this.outerHTML;
+    var article = { title: $('nyt_headline').text(), articleBody: '', photos: [] }
+    article.body = '' 
+    $('div.articleBody').each(function () {
+      article.body += this.outerHTML;
+    })
+    $('div#abColumn img').each(function () {
+      var p = $(this).attr('src');
+      if (p.indexOf('ADS') === -1) {
+        article.photos.push(p);
+      }
+    })
+    console.log(article);
   })
-  $('div#abColumn img').each(function () {
-    var p = $(this).attr('src');
-    if (p.indexOf('ADS') === -1) {
-      article.photos.push(p);
-    }
+  .route('dinersjournal.blogs.nytimes.com', '*', function (window, $) {
+    var article = {title: $('h1.entry-title').text()}
+    console.log($('div.entry-content').html())
   })
-  console.log(article);
-})
-// s.route('dinersjournal.blogs.nytimes.com', '*', function (window, $) {
-//   var article = {title: $('h1.entry-title').text()}
-//   console.log($('div.entry-content').html())
-// })
-s.get('http://www.nytimes.com/pages/dining/index.html');
-s.log('info')
+  .get('http://www.nytimes.com/pages/dining/index.html')
+  .log('info')
+  ;

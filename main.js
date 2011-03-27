@@ -150,7 +150,7 @@ Spider.prototype.get = function (url) {
       self._handler(url, {fromCache:false, headers:resp.headers, body:body});
     })
   });
-  
+  return this;
 }
 Spider.prototype.route = function (hosts, pattern, cb) {
   var self = this;
@@ -161,6 +161,7 @@ Spider.prototype.route = function (hosts, pattern, cb) {
     if (!self.routers[host]) self.routers[host] = new routes.Router();
     self.routers[host].addRoute(pattern, cb);
   })
+  return self;
 }
 Spider.prototype._handler = function (url, response) {
   var u = urlParse(url)
@@ -188,9 +189,10 @@ Spider.prototype.log = function (level) {
       console.log('['+(logLevels[l] || l)+']', text)
     }
   })
+  return this;
 }
 
-exports.createSpider = function (options) {return new Spider(options || {})}
+module.exports = function (options) {return new Spider(options || {})}
 
 // 
 // var crawl = function (options, handler) {
