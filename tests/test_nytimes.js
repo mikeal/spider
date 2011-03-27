@@ -3,16 +3,16 @@ var spider = require('../main');
 var s = spider.createSpider();
 
 s.route('www.nytimes.com', '/pages/dining/index.html', function (window, $) {
-  $('a').each(function () {
-    s.get($(this).attr('href'));
-  })
+  $('a').spider();
 })
 s.route('travel.nytimes.com', '*', function (window, $) {
-  var article = { title: $('nyt_headline').text(), articleBody: '', photos:[] }
+  $('a').spider();
+  if (this.fromCache) return;
+  
+  var article = { title: $('nyt_headline').text(), articleBody: '', photos: [] }
   article.body = '' 
-  console.log(this.outerHTML)
   $('div.articleBody').each(function () {
-    article.body += $(this).html();
+    article.body += this.outerHTML;
   })
   $('div#abColumn img').each(function () {
     var p = $(this).attr('src');

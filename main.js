@@ -139,6 +139,12 @@ Spider.prototype.get = function (url) {
           self._handler(url, {fromCache:true, headers:c_.headers, body:c_.body})
         });
         return;
+      } else if (resp.statusCode !== 200) {
+        self.emit('log', debug, 'Request did not return 200. '+url);
+        return;
+      } else if (!resp.headers['content-type'] || resp.headers['content-type'].indexOf('html') === -1) {
+        self.emit('log', debug, 'Content-Type does not match. '+url);
+        return;
       }
       self.cache.set(url, resp.headers, body);
       self._handler(url, {fromCache:false, headers:resp.headers, body:body});
@@ -157,13 +163,21 @@ Spider.prototype.route = function (hosts, pattern, cb) {
   })
 }
 Spider.prototype._handler = function (url, response) {
-  var u = urlParse(url);
+  var u = urlParse(url)
+    , self = this
+    ;
   if (this.routers[u.host]) {
     var r = this.routers[u.host].match(u.href.slice(u.href.indexOf(u.host)+u.host.length));
     r.spider = this;
     r.response = response
     var window = jsdom.jsdom(response.body).createWindow();
     jqueryify(window);
+    window.$.fn.spider = function () {
+      this.each(function () {
+       var h = window.$(this).attr('href');
+       self.get(h);
+      })
+    }
     r.fn.call(r, window, window.$);
   }
 }
