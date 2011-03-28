@@ -7,8 +7,8 @@ var request = require('request')
   , routes = require('routes')
   , events = require('events')
   , util = require('util')
+  , cookiejar = require('cookiejar')
   ;
-
 
 var headers = 
   { 'accept': "application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5"
@@ -97,6 +97,7 @@ function Spider (options) {
   this.currentUrl = null;
   this.routers = {};
   this.urls = [];
+  this.jar = cookiejar.CookieJar();
 }
 util.inherits(Spider, events.EventEmitter)
 Spider.prototype.get = function (url) {
@@ -132,6 +133,11 @@ Spider.prototype.get = function (url) {
         h['if-none-match'] = c.etag;
       }
     }
+    
+    var cookies = self.jar.getCookies(cookiejar.CookieAccessInfo(u.host, u.pathname));
+    if (cookies) {
+      h.cookie = String(cookies);
+    }
 
     request.get({url:url, headers:h, pool:self.pool}, function (e, resp, body) {
       if (resp.statusCode === 304) {
@@ -145,6 +151,9 @@ Spider.prototype.get = function (url) {
       } else if (!resp.headers['content-type'] || resp.headers['content-type'].indexOf('html') === -1) {
         self.emit('log', debug, 'Content-Type does not match. '+url);
         return;
+      }
+      if (resp.headers['set-cookie']) {
+        self.jar.setCookies(resp.headers['set-cookie'])
       }
       self.cache.set(url, resp.headers, body);
       self._handler(url, {fromCache:false, headers:resp.headers, body:body});
