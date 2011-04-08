@@ -34,8 +34,8 @@ Where the params are the following :
 
 * `hosts` - A string -- or an array of string -- representing the `host` part of the targeted URL(s).
 * `pattern` - The pattern against which spider tries to match the remaining (`pathname` + `search` + `hash`) of the URL(s).
-* `cb` - A function of the form `function(r, window, $)` where
-  * `r` - Will be a variable referencing the `Routes.match` return object/value. For more info see https://github.com/aaronblohowiak/routes.js
+* `cb` - A function of the form `function(window, $)` where
+  * `this` - Will be a variable referencing the `Routes.match` return object/value with some other goodies added from spider. For more info see https://github.com/aaronblohowiak/routes.js
   * `window` - Will be a variable referencing the document's window.
   * `$` - Will be the variable referencing the jQuery Object.
 
