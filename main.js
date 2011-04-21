@@ -127,6 +127,7 @@ Spider.prototype.get = function (url) {
   }
 
   if (this.currentUrl) h.referer = currentUrl;
+  this.currentUrl = url;
   h['user-agent'] = this.userAgent;
   
   this.cache.getHeaders(url, function (c) {
