@@ -88,10 +88,15 @@ MemoryCache.prototype.getHeaders = function (url, cb) {
   cb(this.cache[url].headers);
 }
 
+function NoCache () {};
+NoCache.prototype.get = function (url, cb) { cb(null) };
+NoCache.prototype.getHeaders = function (url, cb) {cb(null)};
+NoCache.prototype.set = function (url, headers, body) {};
+
 function Spider (options) {
   this.maxSockets = options.maxSockets || 4;
   this.userAgent = options.userAgent || firefox;
-  this.cache = options.cache || new MemoryCache();
+  this.cache = options.cache || new NoCache();
   this.pool = options.pool || {maxSockets: options.maxSockets};
   this.options = options;
   this.currentUrl = null;

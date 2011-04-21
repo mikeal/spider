@@ -24,7 +24,7 @@ The `options` object can have the following fields:
 
 * `maxSockets` - Integer containing the maximum amount of sockets in the pool. Defaults to `4`.
 * `userAgent` - The User Agent String to be sent to the remote server along with our request. Defaults to `Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_4; en-US) AppleWebKit/534.7 (KHTML, like Gecko) Chrome/7.0.517.41 Safari/534.7` (firefox userAgent String).
-* `cache` -  The MemoryCache object to be used as cache.
+* `cache` -  The Cache object to be used as cache. Defaults to NoCache, see code for implementation details for a new Cache object.
 * `pool` - A hash object containing the agents for the requests. If omitted the requests will use the global pool which is set to maxSockets.
 
 ### Adding a Route Handler
