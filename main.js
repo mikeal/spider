@@ -105,10 +105,11 @@ function Spider (options) {
   this.jar = cookiejar.CookieJar();
 }
 util.inherits(Spider, events.EventEmitter)
-Spider.prototype.get = function (url) {
+Spider.prototype.get = function (url, referer) {
   var self = this
     , h = copy(headers)
     ;
+  referer = referer || this.currentUrl;  
   if (this.urls.indexOf(url) !== -1) {
     // Already handled this request
     this.emit('log', debug, 'Already received one get request for '+url+'. skipping.')
@@ -126,8 +127,7 @@ Spider.prototype.get = function (url) {
     return;
   }
 
-  if (this.currentUrl) h.referer = currentUrl;
-  this.currentUrl = url;
+  if (referer) h.referer = referer;
   h['user-agent'] = this.userAgent;
   
   this.cache.getHeaders(url, function (c) {
@@ -148,7 +148,7 @@ Spider.prototype.get = function (url) {
     request.get({url:url, headers:h, pool:self.pool}, function (e, resp, body) {
       if (resp.statusCode === 304) {
         self.cache.get(url, function (c_) {
-          self._handler(url, {fromCache:true, headers:c_.headers, body:c_.body})
+          self._handler(url, referer, {fromCache:true, headers:c_.headers, body:c_.body})
         });
         return;
       } else if (resp.statusCode !== 200) {
@@ -162,7 +162,7 @@ Spider.prototype.get = function (url) {
         self.jar.setCookies(resp.headers['set-cookie'])
       }
       self.cache.set(url, resp.headers, body);
-      self._handler(url, {fromCache:false, headers:resp.headers, body:body});
+      self._handler(url, referer, {fromCache:false, headers:resp.headers, body:body});
     })
   });
   return this;
@@ -178,7 +178,7 @@ Spider.prototype.route = function (hosts, pattern, cb) {
   })
   return self;
 }
-Spider.prototype._handler = function (url, response) {
+Spider.prototype._handler = function (url, referer, response) {
   var u = urlParse(url)
     , self = this
     ;
@@ -191,10 +191,17 @@ Spider.prototype._handler = function (url, response) {
     window.$.fn.spider = function () {
       this.each(function () {
        var h = window.$(this).attr('href');
-       self.get(h);
+       self.get(h, url);
       })
     }
-    r.fn.call(r, window, window.$);
+    
+    this.currentUrl = url;
+    if (jsdom.defaultDocumentFeatures.ProcessExternalResources) {
+      $(function () { r.fn.call(r, window, window.$); })
+    } else {
+      r.fn.call(r, window, window.$);
+    }
+    this.currentUrl = null;
   }
 }
 Spider.prototype.log = function (level) {
@@ -208,41 +215,6 @@ Spider.prototype.log = function (level) {
 }
 
 module.exports = function (options) {return new Spider(options || {})}
-
-// 
-// var crawl = function (options, handler) {
-//   var opts = copy(options);
-//   for (i in headers) if (!opts[i]) opts[i] = headers[i];
-//   request(opts, function (err, resp, body) {
-//     if (!err && resp.statusCode == 200) {
-//       var window = jsdom.jsdom(body).createWindow();
-//       var spider = function (u) {
-//         var o
-//         if (typeof u === 'string') {
-//           o = copy(opts)
-//           o.uri = u
-//         } else {
-//           o = copy(opts)
-//           for (i in u) {
-//             o[i] = u[i]
-//           }
-//         }
-//         o.uri = url.resolve(opts.uri.href, o.uri.href || o.uri);
-//         o.headers.referer = opts.uri;
-//         crawl(o, handler);
-//       }
-//       jsdom.jQueryify(window, jqueryFilename, function (window, jquery) {
-//         window.location.href = opts.uri.href;
-//         handler.apply({spider:spider, body:body, resp:resp}, [window, jquery]);
-//       });
-//     }
-//   })
-// }
-// 
-// module.exports = crawl;
-
-
-// var referer = "http://www.taschen.com/pages/en/community/archive_type_2/{{filename}}"
-// 
+module.exports.jsdom = jsdom;
 
 
