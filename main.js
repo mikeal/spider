@@ -3,7 +3,9 @@ var request = require('request')
   , sys = require('sys')
   , path = require('path')
   , jsdom = require('jsdom')
+  , util = require('util')
   , urlParse = require('url').parse
+  , urlResolve = require('url').resolve
   , routes = require('routes')
   , events = require('events')
   , util = require('util')
@@ -71,6 +73,8 @@ var debug = 1
   , error = 100
   ;
   
+var isUrl = /^https?:/;  
+  
 var logLevels = {debug:debug, info:info, error:error, 1:'debug', 50:'info', 100:'error'}
 
 function MemoryCache () {
@@ -110,21 +114,24 @@ Spider.prototype.get = function (url, referer) {
     , h = copy(headers)
     ;
   referer = referer || this.currentUrl;  
+  
+  url = url.slice(0, (url.indexOf('#') === -1) ? url.length : url.indexOf('#'))
+  
   if (this.urls.indexOf(url) !== -1) {
     // Already handled this request
     this.emit('log', debug, 'Already received one get request for '+url+'. skipping.')
-    return;
+    return this;
   } 
   this.urls.push(url);
   
   var u = urlParse(url);
   if (!this.routers[u.host]) {
     this.emit('log', debug, 'No routes for host: '+u.host+'. skipping.')
-    return;
+    return this;
   }
   if (!this.routers[u.host].match(u.href.slice(u.href.indexOf(u.host)+u.host.length))) {
     this.emit('log', debug, 'No routes for path '+u.href.slice(u.href.indexOf(u.host)+u.host.length)+'. skipping.')
-    return;
+    return this;
   }
 
   if (referer) h.referer = referer;
@@ -144,8 +151,9 @@ Spider.prototype.get = function (url, referer) {
     if (cookies) {
       h.cookie = String(cookies);
     }
-
+    
     request.get({url:url, headers:h, pool:self.pool}, function (e, resp, body) {
+      self.emit('log', debug, 'Response received for '+url+'.')
       if (resp.statusCode === 304) {
         self.cache.get(url, function (c_) {
           self._handler(url, referer, {fromCache:true, headers:c_.headers, body:c_.body})
@@ -186,12 +194,16 @@ Spider.prototype._handler = function (url, referer, response) {
     var r = this.routers[u.host].match(u.href.slice(u.href.indexOf(u.host)+u.host.length));
     r.spider = this;
     r.response = response
+    r.url = u;
     var window = jsdom.jsdom(response.body).createWindow();
     jqueryify(window);
     window.$.fn.spider = function () {
       this.each(function () {
-       var h = window.$(this).attr('href');
-       self.get(h, url);
+        var h = window.$(this).attr('href');
+        if (!isUrl.test(h)) {
+          h = urlResolve(url, h);
+        }
+        self.get(h, url);
       })
     }
     
@@ -213,6 +225,18 @@ Spider.prototype.log = function (level) {
   })
   return this;
 }
+
+function ZombieSpider (options) {
+  var zombie = require('zombie');
+  this.browser = new zombie.Browser({ debug: options });
+  if (typeof options.runScripts !== 'undefined') {
+    options.runScripts = false;
+  }
+  this.browser.runScripts = options.runScripts;
+  
+  this.get = function () {};
+}
+util.inherits(ZombieSpider, Spider);
 
 module.exports = function (options) {return new Spider(options || {})}
 module.exports.jsdom = jsdom;
