@@ -107,6 +107,8 @@ function Spider (options) {
   this.routers = {};
   this.urls = [];
   this.jar = cookiejar.CookieJar();
+  this.nbPagesProcessed = 0;
+  this.nbPagesRequested = 0;
 }
 util.inherits(Spider, events.EventEmitter)
 Spider.prototype.get = function (url, referer) {
@@ -151,19 +153,25 @@ Spider.prototype.get = function (url, referer) {
     if (cookies) {
       h.cookie = String(cookies);
     }
+
+    self.nbPagesRequested++;
     
     request.get({url:url, headers:h, pool:self.pool}, function (e, resp, body) {
+      self.nbPagesProcessed++;
       self.emit('log', debug, 'Response received for '+url+'.')
       if (resp.statusCode === 304) {
         self.cache.get(url, function (c_) {
           self._handler(url, referer, {fromCache:true, headers:c_.headers, body:c_.body})
+          if (self.hasMorePage()) self.emit('end');
         });
         return;
       } else if (resp.statusCode !== 200) {
         self.emit('log', debug, 'Request did not return 200. '+url);
+        if (self.hasMorePage()) self.emit('end');
         return;
       } else if (!resp.headers['content-type'] || resp.headers['content-type'].indexOf('html') === -1) {
         self.emit('log', debug, 'Content-Type does not match. '+url);
+        if (self.hasMorePage()) self.emit('end');
         return;
       }
       if (resp.headers['set-cookie']) {
@@ -171,9 +179,13 @@ Spider.prototype.get = function (url, referer) {
       }
       self.cache.set(url, resp.headers, body);
       self._handler(url, referer, {fromCache:false, headers:resp.headers, body:body});
+      if (self.hasMorePage()) self.emit('end');
     })
   });
   return this;
+}
+Spider.prototype.hasMorePage = function() {
+  return (this.nbPagesProcessed == this.nbPagesRequested);
 }
 Spider.prototype.route = function (hosts, pattern, cb) {
   var self = this;

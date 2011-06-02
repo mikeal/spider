@@ -27,4 +27,7 @@ spider()
 })
 .get('http://www.nytimes.com/pages/dining/index.html')
 .log('info')
+.on('end', function() {
+  console.log('end');
+})
 ;
