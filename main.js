@@ -149,7 +149,7 @@ Spider.prototype.get = function (url, referer) {
     
     var cookies = self.jar.getCookies(cookiejar.CookieAccessInfo(u.host, u.pathname));
     if (cookies) {
-      h.cookie = cookies.join(";").replace(/\s+/g,"");
+      h.cookie = cookies.join(";");
     }
     
     request.get({url:url, headers:h, pool:self.pool}, function (e, resp, body) {
