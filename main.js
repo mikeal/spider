@@ -148,11 +148,8 @@ Spider.prototype.get = function (url, referer) {
     }
     
     var cookies = self.jar.getCookies(cookiejar.CookieAccessInfo(u.host, u.pathname));
-    console.log('log', debug, 'cookies = '+cookies);
     if (cookies) {
       h.cookie = cookies.join(";").replace(/\s+/g,"");
-      console.log("cookieheader "+h.cookie);
-//      h.cookie="worksafe=0;cookid=529633;cookpass=40b12aa309f613a5c5d283d6e2d54abd;user_logged_in=1";
     }
     
     request.get({url:url, headers:h, pool:self.pool}, function (e, resp, body) {
