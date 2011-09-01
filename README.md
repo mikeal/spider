@@ -7,7 +7,7 @@ From source:
 <pre>
   git clone git://github.com/mikeal/spider.git 
   cd spider
-  npm link .
+  npm link ../spider
 </pre>
 
 ## (How to use the) API
