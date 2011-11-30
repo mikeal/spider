@@ -166,7 +166,7 @@ Spider.prototype._handler = function (url, referer, response) {
     var $ = cheerio.load(response.body);
 
     this.currentUrl = url;
-    r.fn.call(r, $);
+    r.fn.call(r, $, url);
     this.currentUrl = null;
   }
 }
