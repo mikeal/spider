@@ -2,7 +2,6 @@ var request = require('request')
   , fs = require('fs')
   , sys = require('sys')
   , path = require('path')
-  , jsdom = require('jsdom')
   , util = require('util')
   , urlParse = require('url').parse
   , urlResolve = require('url').resolve
@@ -10,6 +9,7 @@ var request = require('request')
   , events = require('events')
   , util = require('util')
   , cookiejar = require('cookiejar')
+  , cheerio = require('cheerio')
   ;
 
 var headers = 
@@ -21,11 +21,6 @@ var headers =
 var firefox = 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_4; en-US) ' +
               'AppleWebKit/534.7 (KHTML, like Gecko) Chrome/7.0.517.41 Safari/534.7'
 
-  
-var jqueryFilename = path.join(__dirname, 'jquery.js')
-  , jquery = fs.readFileSync(jqueryFilename).toString()
-  ;
-
 var copy = function (obj) {
   var n = {}
   for (i in obj) {
@@ -34,39 +29,8 @@ var copy = function (obj) {
   return n
 }
 
-jsdom.defaultDocumentFeatures = 
-  { FetchExternalResources   : []
-  , ProcessExternalResources : false
-  , MutationEvents           : false
-  , QuerySelector            : false
-  }
-  
 var Context = process.binding('evals').Context,
     Script = process.binding('evals').Script;
-jqueryify = function(window, document) {
-  var filename = jqueryFilename
-    , document = window.document
-    ;
-  if (window) {
-    var ctx = window.__scriptContext;
-    if (!ctx) {
-      window.__scriptContext = ctx = new Context();
-      ctx.__proto__ = window;
-    }
-    var tracelimitbak = Error.stackTraceLimit;
-    Error.stackTraceLimit = 100;
-    try {
-      Script.runInContext(jquery, ctx, filename);
-    }
-    catch(e) {
-      document.trigger(
-        'error', 'Running ' + filename + ' failed.', 
-        {error: e, filename: filename}
-      );
-    }
-    Error.stackTraceLimit = tracelimitbak;
-  }
-};
 
 var debug = 1
   , info = 50
@@ -110,6 +74,7 @@ function Spider (options) {
 }
 util.inherits(Spider, events.EventEmitter)
 Spider.prototype.get = function (url, referer) {
+  if ( !url ) return;
   var self = this
     , h = copy(headers)
     ;
@@ -154,7 +119,10 @@ Spider.prototype.get = function (url, referer) {
     
     request.get({url:url, headers:h, pool:self.pool}, function (e, resp, body) {
       self.emit('log', debug, 'Response received for '+url+'.')
-      if (resp.statusCode === 304) {
+      if ( e || !resp ) {
+        self.emit('log', debug, 'Error getting URL '+url);
+        return;
+      } else if (resp.statusCode === 304) {
         self.cache.get(url, function (c_) {
           self._handler(url, referer, {fromCache:true, headers:c_.headers, body:c_.body})
         });
@@ -195,24 +163,10 @@ Spider.prototype._handler = function (url, referer, response) {
     r.spider = this;
     r.response = response
     r.url = u;
-    var window = jsdom.jsdom(response.body).createWindow();
-    jqueryify(window);
-    window.$.fn.spider = function () {
-      this.each(function () {
-        var h = window.$(this).attr('href');
-        if (!isUrl.test(h)) {
-          h = urlResolve(url, h);
-        }
-        self.get(h, url);
-      })
-    }
-    
+    var $ = cheerio.load(response.body);
+
     this.currentUrl = url;
-    if (jsdom.defaultDocumentFeatures.ProcessExternalResources) {
-      $(function () { r.fn.call(r, window, window.$); })
-    } else {
-      r.fn.call(r, window, window.$);
-    }
+    r.fn.call(r, $);
     this.currentUrl = null;
   }
 }
@@ -233,12 +187,9 @@ function ZombieSpider (options) {
     options.runScripts = false;
   }
   this.browser.runScripts = options.runScripts;
-  
+
   this.get = function () {};
 }
 util.inherits(ZombieSpider, Spider);
 
 module.exports = function (options) {return new Spider(options || {})}
-module.exports.jsdom = jsdom;
-
-

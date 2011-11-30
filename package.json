@@ -11,10 +11,10 @@
   { "web" : "http://github.com/mikeal/spider/issues" }
 , "engines" : ["node >= 0.4.4"]
 , "main" : "./main"
-, "dependencies": 
+, "dependencies":
   { "request" : ">= 1.9.3"
-	, "jsdom" : ">= 0.2.0"
-	, "routes" : ">= 0.1.0"
-	, "cookiejar": ">= 1.3.0"
+        , "routes" : ">= 0.1.0"
+        , "cookiejar": ">= 1.3.0"
+        , "cheerio": ">= 0.3.1"
   }
 }
