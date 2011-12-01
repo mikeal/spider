@@ -13,9 +13,9 @@ jsSpider.route('developer.mozilla.org', '/en/JavaScript/Reference', function ($)
 });
 
 var subroutes = [
-  'Javascript/Reference/Global_Objects',
-  'Javascript/Reference/Statements',
-  'Javascript/Reference/Operators',
+  'JavaScript/Reference/Global_Objects',
+  'JavaScript/Reference/Statements',
+  'JavaScript/Reference/Operators',
   'JavaScript_typed_arrays',
 ];
 for (var i = 0; i < subroutes.length; ++i) {
