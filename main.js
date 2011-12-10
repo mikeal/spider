@@ -8,7 +8,6 @@ var request = require('request')
   , routes = require('routes')
   , events = require('events')
   , util = require('util')
-  , cookiejar = require('cookiejar')
   , cheerio = require('cheerio')
   ;
 
@@ -70,7 +69,6 @@ function Spider (options) {
   this.currentUrl = null;
   this.routers = {};
   this.urls = [];
-  this.jar = cookiejar.CookieJar();
 }
 util.inherits(Spider, events.EventEmitter)
 Spider.prototype.get = function (url, referer) {
@@ -111,12 +109,7 @@ Spider.prototype.get = function (url, referer) {
         h['if-none-match'] = c.etag;
       }
     }
-    
-    var cookies = self.jar.getCookies(cookiejar.CookieAccessInfo(u.host, u.pathname));
-    if (cookies) {
-      h.cookie = String(cookies);
-    }
-    
+
     request.get({url:url, headers:h, pool:self.pool}, function (e, resp, body) {
       self.emit('log', debug, 'Response received for '+url+'.')
       if ( e || !resp ) {
@@ -133,9 +126,6 @@ Spider.prototype.get = function (url, referer) {
       } else if (!resp.headers['content-type'] || resp.headers['content-type'].indexOf('html') === -1) {
         self.emit('log', debug, 'Content-Type does not match. '+url);
         return;
-      }
-      if (resp.headers['set-cookie']) {
-        self.jar.setCookies(resp.headers['set-cookie'])
       }
       self.cache.set(url, resp.headers, body);
       self._handler(url, referer, {fromCache:false, headers:resp.headers, body:body});
