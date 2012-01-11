@@ -44,23 +44,31 @@ function MemoryCache () {
   this.cache = {};
 }
 MemoryCache.prototype.get = function (url, cb) {
-  if (!this.cache[url]) return cb(null);
-  cb({headers:this.cache[url].headers, body:this.cache[url].body.toString()});
+    if (!this.cache[url]) return cb(null);
+    cb(this.cache[url].response);
+};
+MemoryCache.prototype.set = function (url, response) {
+    this.cache[url] = {response:response};
 }
-MemoryCache.prototype.set = function (url, headers, body) {
-  this.cache[url] = {headers:headers, body:new Buffer(body)};
-}
-MemoryCache.prototype.getHeaders = function (url, cb) {
-  if (!this.cache[url]) return cb(null);
-  cb(this.cache[url].headers);
-}
+
+MemoryCache.prototype.getResponse = function (url, cb) {
+    if (!this.cache[url]) return cb(null);
+    cb(this.cache[url].response);
+};
 
 function NoCache () {};
-NoCache.prototype.get = function (url, cb) { cb(null) };
-NoCache.prototype.getHeaders = function (url, cb) {cb(null)};
-NoCache.prototype.set = function (url, headers, body) {};
+NoCache.prototype.get = function (url, cb) {
+    cb(null)
+};
 
-function Spider (options) {
+NoCache.prototype.getResponse = function (url, cb) {
+    cb(null)
+};
+
+NoCache.prototype.set = function () {
+};
+
+function Spider(options) {
   this.maxSockets = options.maxSockets || 4;
   this.userAgent = options.userAgent || firefox;
   this.cache = options.cache || new NoCache();
@@ -100,7 +108,7 @@ Spider.prototype.get = function (url, referer) {
   if (referer) h.referer = referer;
   h['user-agent'] = this.userAgent;
   
-  this.cache.getHeaders(url, function (c) {
+    this.cache.getResponse(url, function (c) {
     if (c) {
       if (c['last-modifed']) {
         h['if-modified-since'] = c['last-modified'];
@@ -110,25 +118,20 @@ Spider.prototype.get = function (url, referer) {
       }
     }
 
-    request.get({url:url, headers:h, pool:self.pool}, function (e, resp, body) {
-      self.emit('log', debug, 'Response received for '+url+'.')
-      if ( e || !resp ) {
-        self.emit('log', debug, 'Error getting URL '+url);
-        return;
-      } else if (resp.statusCode === 304) {
-        self.cache.get(url, function (c_) {
-          self._handler(url, referer, {fromCache:true, headers:c_.headers, body:c_.body})
-        });
-        return;
-      } else if (resp.statusCode !== 200) {
-        self.emit('log', debug, 'Request did not return 200. '+url);
-        return;
-      } else if (!resp.headers['content-type'] || resp.headers['content-type'].indexOf('html') === -1) {
-        self.emit('log', debug, 'Content-Type does not match. '+url);
-        return;
-      }
-      self.cache.set(url, resp.headers, body);
-      self._handler(url, referer, {fromCache:false, headers:resp.headers, body:body});
+    request.get({url:url, headers:h, pool:self.pool}, function (e, resp) {
+      self.emit('log', debug, 'Response received for ' + url + '.');
+            if (e || !resp) {
+                self.emit('log', debug, 'Error getting URL ' + url);
+                throw new Error("Failed to get response from: " + url);
+            } else if (resp.statusCode === 304) {
+                self.cache.get(url, function (c_) {
+                    c_.statusCode = 304;
+                    self._handler(url, referer, c_)
+                });
+            } else {
+                self.cache.set(url, resp);
+                self._handler(url, referer, resp);
+            }
     })
   });
   return this;
