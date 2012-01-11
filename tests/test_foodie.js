@@ -26,7 +26,7 @@ process.on('exit', function () {
 })
 
 var s = spider()
-s.route('blogs.sfweekly.com', '/foodie/sfoodies_92/index.php*', function (window, $) {
+s.route('blogs.sfweekly.com', '/foodie/sfoodies_92/index.php*', function ($) {
   $('div.primaryCategory:contains("SFoodie\'s 92")')
   .each(function () {
     var entry = $(this).parent()
@@ -60,7 +60,7 @@ s.route('blogs.sfweekly.com', '/foodie/sfoodies_92/index.php*', function (window
       ;
     if (infourl.length !== 0) {
       var u = urlParse(infourl.attr('href'));
-      s.route(u.hostname, u.pathname, function (window, $) {
+      s.route(u.hostname, u.pathname, function ($) {
         var text = $('strong:contains("'+restaurant+'")').parent().text()
         text = text.slice(text.indexOf(restaurant+':')+(restaurant+':').length+1)
         info = text.slice(0, text.indexOf('\n'))
@@ -79,7 +79,7 @@ s.route('blogs.sfweekly.com', '/foodie/sfoodies_92/index.php*', function (window
     dishes.push(csv)
   })
 
-  $('a').spider();
+  s.get($('a').attr('href'));
 })
 s.get('http://blogs.sfweekly.com/foodie/sfoodies_92/index.php?page=1');
   
