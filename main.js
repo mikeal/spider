@@ -2,6 +2,7 @@ var request = require('request')
   , fs = require('fs')
   , sys = require('sys')
   , path = require('path')
+  , vm = require('vm')
   , jsdom = require('jsdom')
   , util = require('util')
   , urlParse = require('url').parse
@@ -40,33 +41,6 @@ jsdom.defaultDocumentFeatures =
   , MutationEvents           : false
   , QuerySelector            : false
   }
-  
-var Context = process.binding('evals').Context,
-    Script = process.binding('evals').Script;
-jqueryify = function(window, document) {
-  var filename = jqueryFilename
-    , document = window.document
-    ;
-  if (window) {
-    var ctx = window.__scriptContext;
-    if (!ctx) {
-      window.__scriptContext = ctx = new Context();
-      ctx.__proto__ = window;
-    }
-    var tracelimitbak = Error.stackTraceLimit;
-    Error.stackTraceLimit = 100;
-    try {
-      Script.runInContext(jquery, ctx, filename);
-    }
-    catch(e) {
-      document.trigger(
-        'error', 'Running ' + filename + ' failed.', 
-        {error: e, filename: filename}
-      );
-    }
-    Error.stackTraceLimit = tracelimitbak;
-  }
-};
 
 var debug = 1
   , info = 50
@@ -167,7 +141,8 @@ Spider.prototype.get = function (url, referer) {
         return;
       }
       if (resp.headers['set-cookie']) {
-        self.jar.setCookies(resp.headers['set-cookie'])
+        try { self.jar.setCookies(resp.headers['set-cookie']) }
+        catch(e) {}
       }
       self.cache.set(url, resp.headers, body);
       self._handler(url, referer, {fromCache:false, headers:resp.headers, body:body});
@@ -195,8 +170,12 @@ Spider.prototype._handler = function (url, referer, response) {
     r.spider = this;
     r.response = response
     r.url = u;
-    var window = jsdom.jsdom(response.body).createWindow();
-    jqueryify(window);
+    console.error('test1')
+    
+    var document = jsdom.jsdom(response.body, null, {})
+    var window = document.createWindow()
+    window.run(jquery, jqueryFilename)
+
     window.$.fn.spider = function () {
       this.each(function () {
         var h = window.$(this).attr('href');
@@ -206,15 +185,15 @@ Spider.prototype._handler = function (url, referer, response) {
         self.get(h, url);
       })
     }
-    
+
     this.currentUrl = url;
     if (jsdom.defaultDocumentFeatures.ProcessExternalResources) {
       $(function () { r.fn.call(r, window, window.$); })
     } else {
       r.fn.call(r, window, window.$);
     }
-    this.currentUrl = null;
-  }
+    this.currentUrl = null;    
+  }  
 }
 Spider.prototype.log = function (level) {
   if (typeof level === 'string') level = logLevels[level];
