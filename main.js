@@ -123,7 +123,7 @@ Spider.prototype.get = function (url, referer) {
     
     var cookies = self.jar.getCookies(cookiejar.CookieAccessInfo(u.host, u.pathname));
     if (cookies) {
-      h.cookie = String(cookies);
+      h.cookie = cookies.join(";");
     }
     
     request.get({url:url, headers:h, pool:self.pool}, function (e, resp, body) {
@@ -170,7 +170,6 @@ Spider.prototype._handler = function (url, referer, response) {
     r.spider = this;
     r.response = response
     r.url = u;
-    console.error('test1')
     
     var document = jsdom.jsdom(response.body, null, {})
     var window = document.createWindow()
