@@ -170,7 +170,6 @@ Spider.prototype._handler = function (url, referer, response) {
     r.spider = this;
     r.response = response
     r.url = u;
-    console.error('test1')
     
     var document = jsdom.jsdom(response.body, null, {})
     var window = document.createWindow()
