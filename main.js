@@ -128,6 +128,10 @@ Spider.prototype.get = function (url, referer) {
     
     request.get({url:url, headers:h, pool:self.pool}, function (e, resp, body) {
       self.emit('log', debug, 'Response received for '+url+'.')
+      if (resp === null || resp == 'null') {
+        self.emit('log', debug, 'No request'+url);
+        return;
+      }
       if (resp.statusCode === 304) {
         self.cache.get(url, function (c_) {
           self._handler(url, referer, {fromCache:true, headers:c_.headers, body:c_.body})
