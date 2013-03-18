@@ -128,6 +128,10 @@ Spider.prototype.get = function (url, referer) {
     
     request.get({url:url, headers:h, pool:self.pool}, function (e, resp, body) {
       self.emit('log', debug, 'Response received for '+url+'.')
+      if (e) {
+          self.emit('log', error, e);
+          return;
+      }
       if (resp.statusCode === 304) {
         self.cache.get(url, function (c_) {
           self._handler(url, referer, {fromCache:true, headers:c_.headers, body:c_.body})
@@ -191,7 +195,8 @@ Spider.prototype._handler = function (url, referer, response) {
     } else {
       r.fn.call(r, window, window.$);
     }
-    this.currentUrl = null;    
+    this.currentUrl = null;
+      window.close(); //fix suggested by
   }  
 }
 Spider.prototype.log = function (level) {
