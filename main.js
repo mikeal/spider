@@ -76,6 +76,7 @@ function Spider (options) {
   this.userAgent = options.userAgent || firefox;
   this.cache = options.cache || new NoCache();
   this.pool = options.pool || {maxSockets: options.maxSockets};
+  this.strictSSL = options.strictSSL || true;
   this.options = options;
   this.currentUrl = null;
   this.routers = {};
@@ -126,7 +127,7 @@ Spider.prototype.get = function (url, referer) {
       h.cookie = cookies.join(";");
     }
     
-    request.get({url:url, headers:h, pool:self.pool}, function (e, resp, body) {
+    request.get({url:url, headers:h, pool:self.pool, strictSSL: self.strictSSL}, function (e, resp, body) {
       self.emit('log', debug, 'Response received for '+url+'.')
       if (e) {
           self.emit('log', error, e);
