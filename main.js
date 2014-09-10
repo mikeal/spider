@@ -176,7 +176,7 @@ Spider.prototype._handler = function (url, referer, response) {
     r.url = u;
     
     var document = jsdom.jsdom(response.body, null, {})
-    var window = document.createWindow()
+    var window = document.parentWindow;
     window.run(jquery, jqueryFilename)
 
     window.$.fn.spider = function () {
