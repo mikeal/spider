@@ -96,11 +96,11 @@ Spider.prototype.get = function (url, referer) {
         ;
     referer = referer || this.currentUrl;
 
-    url = url.slice(0, (url.indexOf('#') === -1) ? url.length : url.indexOf('#'))
+    url = url.slice(0, (url.indexOf('#') === -1) ? url.length : url.indexOf('#'));
 
     if (this.urls.indexOf(url) !== -1) {
         // Already handled this request
-        this.emit('log', debug, 'Already received one get request for ' + url + '. skipping.')
+        this.emit('log', debug, 'Already received one get request for ' + url + '. skipping.');
         return this;
     }
     this.urls.push(url);
@@ -195,7 +195,7 @@ Spider.prototype._handler = function (url, referer, response) {
             done: (err, window) => {
                 window.$.fn.spider = function () {
                     this.each(function () {
-                        var h = window.$(this).attr('href');
+                        var h = window.$(this).get(0).href;
                         if (!isUrl.test(h)) {
                             h = urlResolve(url, h);
                         }
