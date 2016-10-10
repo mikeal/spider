@@ -4,7 +4,7 @@ spider
     .route('www.nytimes.com', '/pages/dining/index.html', function (window, $) {
         $('a').spider();
     })
-    .route('travel.nytimes.com', '*', function (window, $) {
+    .route('nytimes.com', '/pages/travel/*.html', function (window, $) {
         $('a').spider();
         if (this.fromCache) return;
 
@@ -26,8 +26,8 @@ spider
         console.log($('div.entry-content').html())
     })
     .get('http://www.nytimes.com/pages/dining/index.html')
-    .log('info')
+    .log('debug')
 ;
-process.on('exit', function () {
-    console.log(spider);
-});
+// process.on('exit', function () {
+//     console.log(spider);
+// });

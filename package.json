@@ -9,6 +9,9 @@
     "spider",
     "spidering"
   ],
+  "scripts": {
+    "test": "mocha --require test/setup --recursive"
+  },
   "version": "0.1.0",
   "author": "Mikeal Rogers <mikeal.rogers@gmail.com>",
   "repository": {
@@ -24,8 +27,14 @@
   "main": "./main",
   "dependencies": {
     "cookiejar": "^2.1.0",
+    "jquery": "^3.1.1",
     "jsdom": "^9.6.0",
     "request": "^2.75.0",
     "routes": "^2.1.0"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "mocha": "^3.1.0",
+    "sinon": "^1.17.6"
   }
 }
