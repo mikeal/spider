@@ -74,7 +74,6 @@ function Spider (options) {
   this.userAgent = options.userAgent || firefox;
   this.cache = options.cache || new NoCache();
   this.pool = options.pool || {maxSockets: this.maxSockets};
-  this.options = options;
   this.currentUrl = null;
   this.routers = {};
   this.cookiejar = request.jar();
