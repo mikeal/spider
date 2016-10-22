@@ -5,7 +5,7 @@
 From source:
 
 <pre>
-  git clone git://github.com/mikeal/spider.git 
+  git clone git://github.com/mikeal/spider.git
   cd spider
   npm link ../spider
 </pre>
@@ -26,11 +26,16 @@ The `options` object can have the following fields:
 * `userAgent` - The User Agent String to be sent to the remote server along with our request. Defaults to `Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_4; en-US) AppleWebKit/534.7 (KHTML, like Gecko) Chrome/7.0.517.41 Safari/534.7` (firefox userAgent String).
 * `cache` -  The Cache object to be used as cache. Defaults to NoCache, see code for implementation details for a new Cache object.
 * `pool` - A hash object containing the agents for the requests. If omitted the requests will use the global pool which is set to maxSockets.
+* `timeout` - Integer containing the number of milliseconds to wait for a server to send response headers (and start the response body) before aborting the request.
+* `delay` - Integer containing the number of milliseconds to wait for next request to send after finishing the current request.
+* `retry` - An integer for determining how many retry times after the request get a error response.
+* `concurrency` - An integer for determining how many requests should be send in parallel.
+* `cookieJar` - To use a custom cookie jar (instead of request’s global cookie jar), set jar to an instance of request.jar().
 
 ### Adding a Route Handler
 
 #### spider.route(hosts, pattern, cb)
-Where the params are the following : 
+Where the params are the following :
 
 * `hosts` - A string -- or an array of string -- representing the `host` part of the targeted URL(s).
 * `pattern` - The pattern against which spider tries to match the remaining (`pathname` + `search` + `hash`) of the URL(s).
@@ -43,7 +48,7 @@ Where the params are the following :
 
 `spider.get(url)` where `url` is the url to fetch.
 
-### Extending / Replacing the MemoryCache 
+### Extending / Replacing the MemoryCache
 
 Currently the MemoryCache must provide the following methods:
 
