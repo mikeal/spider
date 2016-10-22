@@ -74,10 +74,11 @@ function Spider (options) {
   this.userAgent = options.userAgent || firefox;
   this.cache = options.cache || new NoCache();
   this.pool = options.pool || {maxSockets: this.maxSockets};
+  this.cookieJar = options.cookieJar || request.jar();
+  this.finish = options.finish || function() { this.emit('log', info, 'All items have been processed.'); };
+
   this.currentUrl = null;
   this.routers = {};
-  this.cookiejar = request.jar();
-  this.finish = options.finish || function() { this.emit('log', info, 'All items have been processed.'); };
 
   this.queue = async.queue(function(task, callback) {
     self.get(task.url, task.referer, task.retry, function() {
@@ -128,7 +129,7 @@ Spider.prototype.get = function (url, referer, retry, done) {
       headers: newHeaders,
       pool: self.pool,
       timeout: self.timeout,
-      jar: self.cookiejar,
+      jar: self.cookieJar,
       encoding: null
     }, function (err, response, bufferData) {
       self.emit('log', debug, 'Response received for ' + url + '.');
@@ -211,7 +212,7 @@ Spider.prototype._handler = function (url, referer, response, done) {
     headers: response.headers,
     userAgent: self.userAgent,
     pool: self.pool,
-    cookieJar: self.cookiejar,
+    cookieJar: self.cookieJar,
     done: function(err, window) {
       if (err) {
         self.emit('log', error, 'jsdom error: ' + err.message);
@@ -270,5 +271,6 @@ Spider.prototype.log = function (level) {
 
 module.exports = function (options) { return new Spider(options || {}); };
 module.exports.jsdom = jsdom;
+module.exports.request = request;
 
 
