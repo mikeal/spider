@@ -161,8 +161,8 @@ Spider.prototype.get = function (url, referer, retry, done) {
       const contentType = parseContentType(response.headers['content-type']) || parseContentType('text/plain');
 
       // @TODO support more types like image, json, script, etc.
-      if (!contentType.isHTML()) {
-        self.emit('log', debug, 'Content-Type is ' + contentType.type + '/' + contentType.subtype + ', NOT html. ' + url);
+      if (!contentType.isText()) {
+        self.emit('log', error, 'Content-Type is ' + contentType.type + '/' + contentType.subtype + ', NOT text. ' + url);
         done();
         return;
       }
