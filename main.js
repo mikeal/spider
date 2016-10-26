@@ -94,7 +94,7 @@ Spider.prototype.get = function (url, referer, retry, done) {
 
   const urlObj = urlParse(url);
   const router = this.routers[urlObj.host];
-  const route = router ? router.match(urlObj.path) : null;
+  const route = router ? router.match(urlObj.pathname) : null;
 
   referer = referer || this.currentUrl;
   done = done || function() {};
@@ -201,7 +201,7 @@ Spider.prototype.route = function (hosts, pattern, cb) {
 Spider.prototype._handler = function (url, referer, response, done) {
   var self = this;
   var urlObj = urlParse(url);
-  var route = this.routers[urlObj.host].match(urlObj.path);
+  var route = this.routers[urlObj.host].match(urlObj.pathname);
 
   route.spider = this;
   route.body = response.body;
