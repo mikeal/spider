@@ -77,7 +77,6 @@ function Spider (options) {
   this.cookieJar = options.cookieJar || request.jar();
   this.finish = options.finish || function() { this.emit('log', info, 'All items have been processed.'); };
 
-  this.currentUrl = null;
   this.routers = {};
 
   this.queue = async.queue(function(task, callback) {
@@ -96,7 +95,6 @@ Spider.prototype.get = function (url, referer, retry, done) {
   const router = this.routers[urlObj.host];
   const route = router ? router.match(urlObj.pathname) : null;
 
-  referer = referer || this.currentUrl;
   done = done || function() {};
 
   if (!router) {
@@ -227,11 +225,7 @@ Spider.prototype._handler = function (url, referer, response, done) {
             self.push(href, url);
           });
         };
-
-        self.currentUrl = url;
         route.fn.call(route, window, window.jQuery);
-        self.currentUrl = null;
-        window.close();
         done();
       } else {
         self.emit('log', error, 'jsdom window error.');
