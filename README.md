@@ -32,6 +32,8 @@ The `options` object can have the following fields:
 * `concurrency` - An integer for determining how many requests should be send in parallel.
 * `cookieJar` - To use a custom cookie jar (instead of request’s global cookie jar), set jar to an instance of request.jar().
 * `proxy` - An HTTP proxy to be used. [learn more](https://github.com/request/request/#requestoptions-callback)
+* `taskTrigger` - A function will be called when a task of queue is done.
+* `finish` - A function will be called when the queue is drained.
 
 ### Adding a Route Handler
 

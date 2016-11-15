@@ -76,12 +76,16 @@ function Spider (options) {
   this.pool = options.pool || {maxSockets: this.maxSockets};
   this.proxy = options.proxy;
   this.cookieJar = options.cookieJar || request.jar();
+  this.taskTrigger = options.taskTrigger || function() {};
   this.finish = options.finish || function() { this.emit('log', info, 'All items have been processed.'); };
 
   this.routers = {};
 
   this.queue = async.queue(function(task, callback) {
     self.get(task.url, task.referer, task.retry, function() {
+      if (typeof self.taskTrigger === 'function') {
+        self.taskTrigger();
+      }
       setTimeout(callback, self.delay);
     });
   }, self.concurrency);
@@ -268,5 +272,3 @@ Spider.prototype.log = function (level) {
 module.exports = function (options) { return new Spider(options || {}); };
 module.exports.jsdom = jsdom;
 module.exports.request = request;
-
-
