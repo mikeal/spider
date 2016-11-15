@@ -74,6 +74,7 @@ function Spider (options) {
   this.userAgent = options.userAgent || firefox;
   this.cache = options.cache || new NoCache();
   this.pool = options.pool || {maxSockets: this.maxSockets};
+  this.proxy = options.proxy;
   this.cookieJar = options.cookieJar || request.jar();
   this.finish = options.finish || function() { this.emit('log', info, 'All items have been processed.'); };
 
@@ -126,6 +127,7 @@ Spider.prototype.get = function (url, referer, retry, done) {
       url: url,
       headers: newHeaders,
       pool: self.pool,
+      proxy: self.proxy,
       timeout: self.timeout,
       jar: self.cookieJar,
       encoding: null

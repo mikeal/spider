@@ -31,6 +31,7 @@ The `options` object can have the following fields:
 * `retry` - An integer for determining how many retry times after the request get a error response.
 * `concurrency` - An integer for determining how many requests should be send in parallel.
 * `cookieJar` - To use a custom cookie jar (instead of request’s global cookie jar), set jar to an instance of request.jar().
+* `proxy` - An HTTP proxy to be used. [learn more](https://github.com/request/request/#requestoptions-callback)
 
 ### Adding a Route Handler
 
