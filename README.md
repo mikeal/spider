@@ -1,5 +1,7 @@
 # Spider -- Programmable spidering of web sites with node.js and jQuery
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/mikeal/spider.svg)](https://greenkeeper.io/)
+
 ## Install
 
 From source:
