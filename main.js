@@ -1,6 +1,6 @@
 var request = require('request')
   , fs = require('fs')
-  , sys = require('sys')
+  , util = require('util')
   , path = require('path')
   , vm = require('vm')
   , jsdom = require('jsdom')
