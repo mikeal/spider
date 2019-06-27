@@ -9,7 +9,6 @@ var request = require('request')
   , urlResolve = require('url').resolve
   , routes = require('routes')
   , events = require('events')
-  , util = require('util')
   , cookiejar = require('cookiejar')
   ;
 
